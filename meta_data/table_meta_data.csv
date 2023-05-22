@@ -1,0 +1,5 @@
+db_id,table_id,table_name,column_list,type_list,primary_key,foreign_key,row_num,size_in_byte,modify_time,create_time,uid,gid,is_del
+0.0,0.0,course,cid cname ctime,int varchar int,cid,,2.0,41.0,Sat May 28 13:41:36 2022,Tue May 24 00:03:17 2022,0.0,0.0,False
+1.0,1.0,course,cid cname ctime,int varchar int,cid,,0.0,17.0,Tue May 24 00:05:18 2022,Tue May 24 00:05:18 2022,0.0,0.0,False
+1.0,2.0,student,sid sname age cid,int varchar int int varchar int,sid,cid,2.0,30.0,Sat May 28 13:43:05 2022,Tue May 24 00:21:35 2022,0.0,0.0,False
+1.0,3.0,test,a,int,,,0.0,3.0,Tue May 24 00:34:39 2022,Tue May 24 00:34:39 2022,0.0,0.0,False

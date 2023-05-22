@@ -1,0 +1,182 @@
+[
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "init_databases_table",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"is_del\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])\n        db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=\",\")\n# 初始化元数据表\ndef init_meta_data():\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "init_meta_data",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def init_meta_data():\n    try:\n        tb_meta_data_pd = pd.read_csv(TB_META_DATA_PATH)\n    except FileNotFoundError:\n        tb_meta_data_columns = [\"db_id\", \"table_id\", \"table_name\", \"column_list\",\n                                \"type_list\", \"primary_key\",\"foreign_key\",\n                                \"row_num\", \"size_in_byte\", \"modify_time\", \n                                \"create_time\", \"uid\", \"gid\", \"is_del\"]\n        tb_meta_data_pd = pd.DataFrame(columns=tb_meta_data_columns, index=[0])\n        tb_meta_data_pd.to_csv(TB_META_DATA_PATH, index=False, sep=\",\")",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "analyse_use_db",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def analyse_use_db(instr):\n    _, db_name = instr.split(\" \")\n    db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)\n    is_del = db_meta_data_df[db_meta_data_df[\"db_name\"] == db_name][\"is_del\"].values.tolist()[0]\n    if db_name not in db_meta_data_df[\"db_name\"].values or is_del == True:\n        print(\"Error: database`\", db_name, \"`not exist! \")\n        exit()\n    print(\"current database:\", db_name)\n    return db_name\n# 分析语句",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "analyse_instr",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def analyse_instr(instr, use_db_name):\n    # 拆出单词\n    USE_DATABASE_PATH = os.path.join(BASE_PATH, use_db_name)\n    tokens = re.split(r\"([ ,();=])\", instr.lower().strip())\n    tokens = [t for t in tokens if t not in [' ', '', '\\n']]\n    if tokens[0] == \"create\" and tokens[1] == \"database\":\n        db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)\n        if pd.isnull(db_meta_data_df.loc[0, \"db_id\"]):\n            db_id = 0\n        else:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def main():\n    init_meta_data()\n    init_databases_table()\n    instr = str(input(\"input your instruction:\\n\"))\n    db_name = DEFAULT_DB_NAME\n    while instr != \"quit\":\n        # use database\n        if re.fullmatch(use_dbs_instr, instr):\n            db_name = analyse_use_db(instr)\n        else:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "BASE_PATH",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "BASE_PATH = os.getcwd()\nDB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\database_meta_data.csv\")\nTB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data.csv\")\nDEFAULT_DB_NAME = \"xsj\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "DB_META_DATA_PATH",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "DB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\database_meta_data.csv\")\nTB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data.csv\")\nDEFAULT_DB_NAME = \"xsj\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n#insert语句",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "TB_META_DATA_PATH",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "TB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data.csv\")\nDEFAULT_DB_NAME = \"xsj\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n#insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_DB_NAME",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "DEFAULT_DB_NAME = \"xsj\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n#insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"\n#update语句",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "use_dbs_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "use_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n#insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"\n#update语句\nupdate_instr=\"update\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\sset\\\\b\\\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\\\\b\\\\swhere\\\\b\\\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 删除数据库\ndrop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "drop_database_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "drop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "drop_table_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "drop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表\ndef init_databases_table():\n    try:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "delete_where_table_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "delete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "select_table_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "select_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"is_del\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "select_where_table_instr",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "select_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"is_del\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])\n        db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=\",\")",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "type_list",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "type_list = [\"varchar\", \"int\", \"null\"]\n# 初始化元数据库表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"is_del\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])\n        db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=\",\")\n# 初始化元数据表",
+        "detail": "main",
+        "documentation": {}
+    }
+]
