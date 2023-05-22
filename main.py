@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import time
 import re
+import instrana
 
 BASE_PATH = os.getcwd()
 DB_META_DATA_PATH = os.path.join(BASE_PATH, r"meta_data\database_meta_data.csv")
@@ -462,16 +463,17 @@ def analyse_instr(instr, use_db_name):
 def main():
     init_meta_data()
     init_databases_table()
-    instr = str(input("input your instruction:\n"))
+    instr = str(input("Please enter the instruction: \n"))
     db_name = DEFAULT_DB_NAME
-    while instr != "quit":
+    
+    while instr != "exit":
         # use database
         if re.fullmatch(use_dbs_instr, instr):
             db_name = analyse_use_db(instr)
         else:
             analyse_instr(instr, db_name)
         instr = str(input("\ninput your instruction:\n"))
-    print("quit successfully!")
+    print("Exit successfully!")
 
 
 if __name__ == '__main__':

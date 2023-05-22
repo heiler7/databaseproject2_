@@ -36,6 +36,186 @@
         "documentation": {}
     },
     {
+        "label": "instrana",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "instrana",
+        "description": "instrana",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "init_databases_table",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])\n        db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=\",\")\n# 初始化二维表信息表\ndef init_meta_data():",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "init_meta_data",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def init_meta_data():\n    try:\n        tb_meta_data_pd = pd.read_csv(TB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，表id，表名，属性列表，属性类型列表，主键，外键，行数，表大小，修改时间，创建时间，用户id，组id和表是否有效的标记\n        tb_meta_data_columns = [\"db_id\", \"table_id\", \"table_name\", \"column_list\",\n                                \"type_list\", \"primary_key\",\"foreign_key\",\n                                \"row_num\", \"size_in_byte\", \"modify_time\", \n                                \"create_time\", \"uid\", \"gid\", \"invalid\"]\n        tb_meta_data_pd = pd.DataFrame(columns=tb_meta_data_columns, index=[0])",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "analyse_use_db",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def analyse_use_db(instr):\n    _, db_name = instr.split(\" \")\n    db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)\n    invalid = db_meta_data_df[db_meta_data_df[\"db_name\"] == db_name][\"invalid\"].values.tolist()[0]\n    if db_name not in db_meta_data_df[\"db_name\"].values or invalid == True:\n        print(\"Error: database `\", db_name, \"` not exist! \")\n        exit()\n    print(\"Current database:\", db_name)\n    return db_name\n# 指令函数",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "create_database",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def create_database(tokens,):\n    temp_dbmeta = pd.read_csv(DB_META_DATA_PATH)\n    # loc通过行索引中的具体值来取行数据,这里判断第一行是否有内容\n    if pd.isnull(temp_dbmeta.loc[0, \"db_id\"]):\n        db_id = 0\n    else:\n        db_id = temp_dbmeta.shape[0]\n    # 数据库名在第三个词的位置：create database xxx\n    new_db_name = tokens[2]\n    if not os.path.exists(new_db_name):",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "show_database",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def show_database():\n    # 读取数据库信息表，输出所有数据库的信息\n    temp_dbmeta = pd.read_csv(DB_META_DATA_PATH)\n    db_name_list = temp_dbmeta[temp_dbmeta[\"invalid\"] == False][\"db_name\"].values # 得到所有有效的信息\n    for db_name in db_name_list:\n        print(\"database name: {} \".format(db_name))\ndef create_table(tokens,dbname,db_path):\n    # 读取数据库信息表并获得所属数据库id\n    temp_dbmeta = pd.read_csv(DB_META_DATA_PATH)\n    db_id = int(temp_dbmeta[temp_dbmeta[\"db_name\"] == dbname][\"db_id\"].values[0])",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "create_table",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def create_table(tokens,dbname,db_path):\n    # 读取数据库信息表并获得所属数据库id\n    temp_dbmeta = pd.read_csv(DB_META_DATA_PATH)\n    db_id = int(temp_dbmeta[temp_dbmeta[\"db_name\"] == dbname][\"db_id\"].values[0])\n    # 读取二维表的信息表并为新表分配id\n    temp_table_meta = pd.read_csv(TB_META_DATA_PATH)\n    # 判断信息表是否为空\n    if pd.isnull(temp_table_meta.loc[0, \"table_id\"]):\n        table_id = 0\n    else:",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "insert_data",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def insert_data(instr,db_path):\n    # 指令格式：insert into <table_name> values(a,b,c...) \n    # 分割\n    tokens=[i for i in re.split(r\"([ ,();=])\", instr.lower().strip()) if i not in[' ',',',')','(','']]\n    table_name = tokens[2] # 第三位是表名\n    idx = tokens.index(\"values\")\n    table_path = os.path.join(db_path, table_name + \".csv\")\n    # 先判断表是否存在，存在则找到这个表\n    try:\n        temp_table = pd.read_csv(table_path)",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "analyse_instr",
+        "kind": 2,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "def analyse_instr(instr, dbname):\n    # 拆出单词\n    db_path = os.path.join(BASE_PATH, dbname)\n    tokens = re.split(r\"([ ,();=])\", instr.lower().strip())\n    tokens = [t for t in tokens if t not in [' ', '', '\\n']]\n    # print(tokens)\n    # 创建数据库\n    if tokens[0] == \"create\" and tokens[1] == \"database\":\n        create_database(tokens)\n    # 展示数据库信息",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "BASE_PATH",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "BASE_PATH = os.getcwd()\n# 数据库信息保存\nDB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\database_meta_data1.csv\")\n# 表信息保存\nTB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data1.csv\")\nDEFAULT_DB_NAME = \"hei\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "DB_META_DATA_PATH",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "DB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\database_meta_data1.csv\")\n# 表信息保存\nTB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data1.csv\")\nDEFAULT_DB_NAME = \"hei\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "TB_META_DATA_PATH",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "TB_META_DATA_PATH = os.path.join(BASE_PATH, r\"meta_data\\table_meta_data1.csv\")\nDEFAULT_DB_NAME = \"hei\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n# insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_DB_NAME",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "DEFAULT_DB_NAME = \"hei\"\n# 显示所有列\npd.set_option('display.max_columns', None)\n# 显示所有行\npd.set_option('display.max_rows', None)\n# 选择数据库\nuse_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n# insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"\n# update语句",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "use_dbs_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "use_dbs_instr = r\"use\\b\\s[a-zA-Z0-9_]+\"\n# insert语句\ninsert_instr=\"insert\\\\b\\\\sinto\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\svalues\\((([0-9]*)|([a-zA-Z0-9_]*))?(\\,([0-9]*)|([a-zA-Z0-9_]*))*\\)\"\n# update语句\nupdate_instr=\"update\\\\b\\\\s[a-zA-Z0-9_]+\\\\b\\\\sset\\\\b\\\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\\\\b\\\\swhere\\\\b\\\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 删除数据库\ndrop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "drop_database_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "drop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "drop_table_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "drop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "delete_where_table_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "delete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "select_table_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "select_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "select_where_table_instr",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "select_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
+        "label": "type_list",
+        "kind": 5,
+        "importPath": "instrana",
+        "description": "instrana",
+        "peekOfCode": "type_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])\n        db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=\",\")",
+        "detail": "instrana",
+        "documentation": {}
+    },
+    {
         "label": "init_databases_table",
         "kind": 2,
         "importPath": "main",
@@ -76,7 +256,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def main():\n    init_meta_data()\n    init_databases_table()\n    instr = str(input(\"input your instruction:\\n\"))\n    db_name = DEFAULT_DB_NAME\n    while instr != \"quit\":\n        # use database\n        if re.fullmatch(use_dbs_instr, instr):\n            db_name = analyse_use_db(instr)\n        else:",
+        "peekOfCode": "def main():\n    init_meta_data()\n    init_databases_table()\n    instr = str(input(\"Please enter the instruction: \\n\"))\n    db_name = DEFAULT_DB_NAME\n    while instr != \"exit\":\n        # use database\n        if re.fullmatch(use_dbs_instr, instr):\n            db_name = analyse_use_db(instr)\n        else:",
         "detail": "main",
         "documentation": {}
     },
