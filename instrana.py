@@ -2,16 +2,16 @@
 """
 测试用例：
 【已经修改】
-0. 选择数据库 默认是xsj
-use wyj
+0. 选择数据库 默认是hei
+use hei
 1. 创建数据库
-create database wyj
+create database hei
 
 2. 创建表course：
 create table course(cid int, cname varchar, ctime int, primary key(cid))
 
 3. 创建表student：
-create table student(sid int, sname varchar, age int, primary key(sid), foreign key(cid), references course(cid))
+create table student(sid int, sname varchar, age int, primary key(sid))
 
 4. 显示元数据
 show meta data
@@ -71,13 +71,15 @@ import pandas as pd
 import os
 import time
 import re
+from MemoryManager import MemoryManager
 
 BASE_PATH = os.getcwd()
 # 数据库信息保存
-DB_META_DATA_PATH = os.path.join(BASE_PATH, r"meta_data\database_meta_data1.csv")
+DB_META_DATA_PATH = os.path.join(r".\meta_data\database_meta_data1.csv")
 # 表信息保存
-TB_META_DATA_PATH = os.path.join(BASE_PATH, r"meta_data\table_meta_data1.csv")
+TB_META_DATA_PATH = os.path.join(r".\meta_data\table_meta_data1.csv")
 DEFAULT_DB_NAME = "hei"
+mmManager = MemoryManager("system")
 
 # 显示所有列
 pd.set_option('display.max_columns', None)
@@ -110,7 +112,7 @@ def init_databases_table():
     except FileNotFoundError:
         # 包含数据库id，数据库名，创建时间，数据库是否有效的标记
         db_meta_data_columns = ["db_id", "db_name", "create_time", "invalid"]
-        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns, index=[0])
+        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns,index=[0])
         db_meta_data_pd.to_csv(DB_META_DATA_PATH, index=False, sep=",")
 
 
@@ -124,18 +126,18 @@ def init_meta_data():
                                 "type_list", "primary_key","foreign_key",
                                 "row_num", "size_in_byte", "modify_time", 
                                 "create_time", "uid", "gid", "invalid"]
-        tb_meta_data_pd = pd.DataFrame(columns=tb_meta_data_columns, index=[0])
+        tb_meta_data_pd = pd.DataFrame(columns=tb_meta_data_columns,index=[0])
         tb_meta_data_pd.to_csv(TB_META_DATA_PATH, index=False, sep=",")
 
 # 初始化索引表
 def init_index_table(path):
     try:
-        tb_meta_data_pd = pd.read_csv(path)
+        ib_meta_data_pd = pd.read_csv(path)
     except FileNotFoundError:
         # 包含有序主键和行数
-        tb_meta_data_columns = ["primkey_val", "row_number"]
-        tb_meta_data_pd = pd.DataFrame(columns=tb_meta_data_columns, index=[0])
-        tb_meta_data_pd.to_csv(path, index=False, sep=",")
+        ib_meta_data_columns = ["primkey_val", "row_number"]
+        ib_meta_data_pd = pd.DataFrame(columns=ib_meta_data_columns)
+        ib_meta_data_pd.to_csv(path, index=False, sep=",")
 
 # 选择数据库
 def analyse_use_db(instr):
@@ -177,7 +179,7 @@ def create_database(tokens,):
     if not os.path.exists(new_db_name):
         # 数据库以文件夹形式存储，下存一些二维表
         os.mkdir(new_db_name)
-        print("Create database ", new_db_name, " successfully!")
+        print("Create database", new_db_name, "successfully!")
     else:
         # 数据库已存在错误
         print("Error: This database is already existing! ")
@@ -215,7 +217,7 @@ def create_table(tokens,dbname,db_path):
     tb_name_list = temp_df[temp_df["db_id"] == db_id]["table_name"].values
     # 判断表名是否重复
     if new_table_name in tb_name_list:
-        print("Error: This table ", new_table_name, " is already existing! ")
+        print("Error: This table", new_table_name, "is already existing! ")
         exit()
     # 获取新表的属性以及数据类型
     col_tokens = [] # 属性和类型list
@@ -321,6 +323,7 @@ def insert_data(instr,db_path):
     try:
         temp_table = pd.read_csv(table_path)
         temp_table_meta = pd.read_csv(TB_META_DATA_PATH)
+        # print(temp_table_meta[temp_table_meta["table_name"] == table_name].index.tolist())
         index = temp_table_meta[temp_table_meta["table_name"] == table_name].index.tolist()[0] # 该表在meta中的索引
     except FileNotFoundError:
         print("Error: File Not Found.")
@@ -365,18 +368,30 @@ def insert_data(instr,db_path):
     if newdatalst[primkey] in [str(i) for i in list(temp_table.loc[:, primkey][: -1])]:
         print("Error: primkey constraint error.")
         exit()
-
+    
     # 添加到索引表
     new_index = [newdatalst[primkey],temp_table.shape[0]]
     indextable_path = os.path.join(db_path, table_name + "_index.csv")
     temp_table_index = pd.read_csv(indextable_path)
+    column_lst = str(temp_table_meta.loc[index,"column_list"]).split(' ')
+    type_lst = str(temp_table_meta.loc[index,"type_list"]).split(' ')
+    for i in range(len(column_lst)):
+        if(primkey == column_lst[i]):
+            primtype =  type_lst[i]
+            break
     # 对索引进行插入排序
     indexlen = temp_table_index.shape[0]
     point = -1
-    for i in range(indexlen):
-        if newdatalst[primkey] > temp_table_index['primkey']:
+    if(primtype == 'int'):
+        tmpprim = int(newdatalst[primkey] )
+    for i in range(0,indexlen):
+        
+        if tmpprim < temp_table_index[:]['primkey_val'][i]:
             tmp = temp_table_index.loc[i]
             temp_table_index.loc[i] = new_index
+            print(tmp)
+            print(temp_table_index.loc[i])
+
             point = i
             break
         else:
@@ -384,13 +399,13 @@ def insert_data(instr,db_path):
     if(point == -1):
         temp_table_index.loc[indexlen] = new_index
     else:
-        for i in range(point,indexlen):
+        for i in range(point+1,indexlen):
             tmp1 = tmp
             tmp = temp_table_index.loc[i]
             temp_table_index.loc[i] = tmp1
         temp_table_index.loc[indexlen] = tmp
     
-    temp_table_index.to_csv(indextable_path , index=False, sep=',')
+    temp_table_index.to_csv(indextable_path, index=False, sep=',')
     temp_table.to_csv(table_path, index=False, sep=',')
     stat = os.stat(table_path)
 
@@ -398,6 +413,9 @@ def insert_data(instr,db_path):
     temp_table_meta.loc[index, "modify_time"] = time.ctime(stat.st_mtime)
     temp_table_meta.loc[index, "size_in_byte"] = stat.st_size
     temp_table_meta.to_csv(TB_META_DATA_PATH, index=False, sep=',')
+
+    # 内存管理
+    mmManager.addMomeryBlock(list(newdatalst.values()),8)
 
     print("Insert successfully!")
 
@@ -652,7 +670,7 @@ def analyse_instr(instr, dbname):
     elif tokens[0] == "show":
         if tokens[1] == "databases":
             show_database()
-        if tokens[1] == "tables":
+        elif tokens[1] == "tables":
             show_table(dbname)
         else:
             print("Invalid input!")
@@ -694,3 +712,22 @@ def analyse_instr(instr, dbname):
 
 
 
+
+def main():
+    init_meta_data()
+    init_databases_table()
+    instr = str(input("Please enter the instruction: \n"))
+    db_name = DEFAULT_DB_NAME
+    
+    while instr != "exit":
+        # use database
+        if re.fullmatch(use_dbs_instr, instr):
+            db_name = analyse_use_db(instr)
+        else:
+            analyse_instr(instr, db_name)
+        instr = str(input("\ninput your instruction:\n"))
+    print("Exit successfully!")
+
+
+if __name__ == '__main__':
+    main()

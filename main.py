@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import time
 import re
-import instrana
+
 
 BASE_PATH = os.getcwd()
 DB_META_DATA_PATH = os.path.join(BASE_PATH, r"meta_data\database_meta_data.csv")

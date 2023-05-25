@@ -96,3 +96,4 @@ class MemoryManager:
             file.write(",".join(varList) + "\n")
         return [os.path.join(self.MemoryBlockPath, str(whichBlock) + ".csv"),lineNum]
 
+
