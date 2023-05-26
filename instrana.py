@@ -4,6 +4,7 @@
 【已经修改】
 0. 选择数据库 默认是hei
 use hei
+
 1. 创建数据库
 create database hei
 
@@ -23,13 +24,13 @@ show databases
 show tables
 
 7. select投影：
-select * from student
+select * from course
 
 8. select投影2
-select sid, age from student
+select cid,cname from course
 
 9. select where查询
-select sname,age from student where age=18
+select cid,cname from course where ctime=2022
 
 10. 删除数据库
 drop database db
@@ -40,7 +41,7 @@ drop table tb
 
 12. 删除表项 
 use database db
-delete from table where condition
+delete from course where cid=3
 
 3.2 给course增加表项：
 insert into course values(2,test,2022)
@@ -59,7 +60,7 @@ insert into student values(3,zhy,4,5)
 insert into student values(1,zhy,4,5)
 
 7. 修改表项：
-update student set age=5 where sname=wyj
+update course set ctime=2023 where cid=4
 
 8.修改表项(属性不存在或者没找到对应表项):
 update student set age=5 where name=wyj
@@ -100,7 +101,7 @@ drop_table_instr = r"drop\b\stable\b\s[a-zA-Z0-9_]+"
 delete_where_table_instr = r"delete\b\sfrom\b\s[a-zA-Z0-9_]+\b\swhere\b\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+"
 # 查询
 select_table_instr = r"(select\b\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\b\sfrom\b\s[a-zA-Z0-9_]+)"
-select_where_table_instr = r"select\b\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\b\sfrom\b\s[a-zA-Z0-9_]+\b\swhere\b\s[a-zA-Z0-9_]+[>=<][0-9]+"
+select_where_table_instr = r"select\b\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\b\sfrom\b\s[a-zA-Z0-9_]+\b\swhere\b\s[a-zA-Z0-9_]+[>=<][0-9]+" # where只有int的比较
 
 type_list = ["varchar", "int", "null"]
 
@@ -152,17 +153,18 @@ def analyse_use_db(instr):
 
 # 二分查找
 def binsearch(table_df,attrv,attr):
-    lst = list(table_df[:][attr].values)
+    lst = list(table_df.loc[:,'primkey_val'])
+    lst1 = list(table_df.loc[:,'row_number'])
     l = 0;r = table_df.shape[0]
     while(l<r):
         mid = int((l+r)/2)
         if lst[mid] == attrv:
-            return mid
+            return lst1[mid]
         elif lst[mid] > attrv:
-            right = mid
+            r = mid
         else:
-            left = mid
-        mid = int((right + left)/2)
+            l = mid+1
+        
     else:
         return -1
 
@@ -423,7 +425,7 @@ def show_table(dbname):
     db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)
     db_id = int(db_meta_data_df[db_meta_data_df["db_name"] == dbname]["db_id"].values[0])
     tb_meta_data_df = pd.read_csv(TB_META_DATA_PATH)
-    temp_df = tb_meta_data_df[tb_meta_data_df["is_del"] == False]
+    temp_df = tb_meta_data_df[tb_meta_data_df["invalid"] == False]
     tb_name_list = temp_df[temp_df["db_id"] == db_id]["table_name"].values
     for tb_name in tb_name_list:
         print(tb_name)
@@ -449,12 +451,21 @@ def update(instr,db_path):
     try:
         table_df[change_item]=table_df[change_item].astype('str')
         table_df[attr]=table_df[attr].astype('str')
-        # 修改，索引和非索引
+        # 修改，索引和非索引方式
         indextable_path = os.path.join(db_path, table_name + "_index.csv")
         temp_table_index = pd.read_csv(indextable_path)
         primkey = str(meta_data_df.loc[index_m, "primary_key"])
+        # 获取主键的类型
+        column_lst = str(meta_data_df.loc[index_m,"column_list"]).split(' ')
+        type_lst = str(meta_data_df.loc[index_m,"type_list"]).split(' ')
+        for i in range(len(column_lst)):
+            if(primkey == column_lst[i]):
+                primtype =  type_lst[i]
+                break
+        if(primtype == 'int'):
+            tmpprimval = int(attrv)
         if(attr == primkey):
-            idx1 = binsearch(temp_table_index ,attrv,attr)
+            idx1 = binsearch(temp_table_index ,tmpprimval,attr)
             if(idx1 == -1):
                 exit()
         else:
@@ -469,7 +480,6 @@ def update(instr,db_path):
         exit()
     table_df.to_csv(table_path, index=False, sep=',')
     stat = os.stat(table_path)
-    meta_data_df.loc[index_m, "row_num"] += 1
     meta_data_df.loc[index_m, "modify_time"] = time.ctime(stat.st_mtime)
     meta_data_df.loc[index_m, "size_in_byte"] = stat.st_size
     meta_data_df.to_csv(TB_META_DATA_PATH, index=False, sep=',')
@@ -525,8 +535,17 @@ def select_where_table(instr,dbpath):
         temp_table_index = pd.read_csv(indextable_path)
         primkey = str(meta_data_df.loc[index_m, "primary_key"])
         if(condition_list[0] == primkey):
-            idx1 = binsearch(temp_table_index ,condition_list[0],condition_list[1])
-            ans = table_df[idx1]
+            # 获取主键的类型
+            column_lst = str(meta_data_df.loc[index_m,"column_list"]).split(' ')
+            type_lst = str(meta_data_df.loc[index_m,"type_list"]).split(' ')
+            for i in range(len(column_lst)):
+                if(primkey == column_lst[i]):
+                    primtype =  type_lst[i]
+                    break
+            if(primtype == 'int'):
+                tmpprimval = int(condition_list[1])
+            idx1 = binsearch(temp_table_index ,tmpprimval,condition_list[0])
+            ans = table_df[idx1-1:idx1]
         else:
             ans = table_df[table_df[condition_list[0]] == int(condition_list[1])]
             
@@ -552,22 +571,23 @@ def dropdatabase(instr):
     # 从数据库表文件中查看是否有这个名称对应的并且其删除标记为FALSE的元组
     try:
         index = db_table_temp[(db_table_temp["db_name"] == db) \
-        & (db_table_temp["is_del"] == False)].index.tolist()[0]
+        & (db_table_temp["invalid"] == False)].index.tolist()[0]
     except:
         # 如果没有，要删除的数据库不存在
         print("Error: 没有" + db + "数据库！")
         exit()
     # 如果存在，那么去存放所有表数据的表，将所有属于该数据库且删除标记为FALSE的表的删除标记改为TRUE
     # 表示已经删除
-    db_table_temp.loc[db_table_temp["db_name"] == db, 'is_del'] = True
+    db_table_temp.loc[db_table_temp["db_name"] == db, 'invalid'] = True
     # 获得数据库id
     db_id_temp = db_table_temp.at[index, 'db_id']
     db_table_temp.to_csv(DB_META_DATA_PATH, index=False, sep=",")
     # 查找存放所有表数据的表，选择所有属于该数据库且删除标记为FALSE的元组（也就是属于该数据库的表）
     # 如果有元组被选择，将上述元组的删除标记改为TRUE，表示已经删除
     tables = pd.read_csv(TB_META_DATA_PATH)
-    tables.loc[tables["db_id"] == db_id_temp, 'is_del'] = True
+    tables.loc[tables["db_id"] == db_id_temp, 'invalid'] = True
     tables.to_csv(TB_META_DATA_PATH, index=False, sep=",")
+    print("drop database {} successfully.".format(db))
 
 def droptable(instr,dbname):
         # 解析sql语句，如果符合删除数据库的正则表达式，那么从语句中得到要删除的表的名称
@@ -578,7 +598,7 @@ def droptable(instr,dbname):
             index = \
                 db_table_temp[
                     (db_table_temp["db_name"] == dbname) &\
-                    (db_table_temp["is_del"] == False)].index.tolist()[0]
+                    (db_table_temp["invalid"] == False)].index.tolist()[0]
         except:
             # 提示选择数据库
             print("Error: 没有" + dbname + "数据库！")
@@ -589,14 +609,15 @@ def droptable(instr,dbname):
         try:
             # 查找存放所有表数据的表，选择所有属于该数据库且表名为需要删除的表名，删除标记为FALSE的元组
             temp = tables[(tables["table_name"] == tb) & (tables["db_id"] == db_id_temp) \
-            & (tables["is_del"] == False)].index.tolist()[0]
+            & (tables["invalid"] == False)].index.tolist()[0]
         except:
             # 如果没有元组被选择，提示要删除的表不存在
             print("Error: 没有" + tb + "表！")
             exit()
         # 如果有元组被选择，将上述元组的删除标记改为TRUE，表示已经删除
-        tables.loc[(tables["table_name"] == tb) & (tables["db_id"] == db_id_temp), "is_del"] = True
+        tables.loc[(tables["table_name"] == tb) & (tables["db_id"] == db_id_temp), "invalid"] = True
         tables.to_csv(TB_META_DATA_PATH, index=False, sep=",")
+        print("drop table {} successfully.".format(tb))
 
 def deletedata(instr,dbname):
         _, _, tb, _, condition = instr.split(" ")
@@ -607,19 +628,21 @@ def deletedata(instr,dbname):
             index = \
                 db_table_temp[
                     (db_table_temp["db_name"] == dbname) &\
-                    (db_table_temp["is_del"] == False)].index.tolist()[0]
+                    (db_table_temp["invalid"] == False)].index.tolist()[0]
+           
         except:
             # 否则，提示选择数据库
             print("Error: 没有" + dbname + "数据库！")
             exit()
         # 获得数据库id
         db_id_temp = db_table_temp.at[index, 'db_id']
+        table_path =  dbname + "\\" + tb + ".csv"
         try:
             #按照相同方式寻找表
             tables = pd.read_csv(dbname + "\\" + tb + ".csv")
             tables1 = pd.read_csv(TB_META_DATA_PATH)
             temp = tables1[(tables1["table_name"] == tb) & (tables1["db_id"] == db_id_temp) & (
-                    tables1["is_del"] == False)].index.tolist()[0]
+                    tables1["invalid"] == False)].index.tolist()[0]
             meta_data_df = pd.read_csv(TB_META_DATA_PATH)
             index_m = meta_data_df[meta_data_df["table_name"] == tb].index.tolist()[0]
         except:
@@ -635,18 +658,46 @@ def deletedata(instr,dbname):
             tables = tables.drop(tables[tables[condition_list[0]] > int(condition_list[1])].index)
         elif condition.find("=") != -1:
             condition_list = condition.split("=")
-            # 修改，索引和非索引
             dbpath = os.path.join(BASE_PATH, dbname)
+            # 修改，索引和非索引
             indextable_path = os.path.join(dbpath, tb + "_index.csv")
             temp_table_index = pd.read_csv(indextable_path)
+            indexlen = temp_table_index.shape[0]
             primkey = str(meta_data_df.loc[index_m, "primary_key"])
             if(condition_list[0] == primkey):
-                idx1 = binsearch(temp_table_index ,condition_list[0],condition_list[1])
+                # 获取主键的类型
+                column_lst = str(meta_data_df.loc[index_m,"column_list"]).split(' ')
+                type_lst = str(meta_data_df.loc[index_m,"type_list"]).split(' ')
+                for i in range(len(column_lst)):
+                    if(primkey == column_lst[i]):
+                        primtype =  type_lst[i]
+                        break
+                if(primtype == 'int'):
+                    tmpprimval = int(condition_list[1])
+                idx1 = binsearch(temp_table_index ,tmpprimval,condition_list[0])-1
                 tables = tables.drop(idx1)
+                # 更新索引表
+                point = -1
+                for i in range(0,indexlen):
+                    # temp11 = temp_table_index.loc[i,'row_number']
+                    # print(temp11)
+                    if(temp_table_index.loc[i,'row_number'] == idx1+1):
+                        point = i
+                    elif(temp_table_index.loc[i,'row_number'] > idx1+1):
+                        temp_table_index.loc[i,'row_number'] = int(temp_table_index.loc[i,'row_number'])-1
+                        # print(temp_table_index.loc[i,'row_number'])
+                if(point!=-1):
+                    temp_table_index = temp_table_index.drop(point)
+                temp_table_index.to_csv(indextable_path, index=False, sep=',')
             else:
                 tables = tables.drop(tables[tables[condition_list[0]] == int(condition_list[1])].index)
-            
         tables.to_csv(dbname + "\\" + tb + ".csv", index=False, sep=",")
+        stat = os.stat(table_path)
+        meta_data_df.loc[index_m,'row_num'] = int(meta_data_df.loc[index_m,'row_num'])-1
+        meta_data_df.loc[index_m, "modify_time"] = time.ctime(stat.st_mtime)
+        meta_data_df.loc[index_m, "size_in_byte"] = stat.st_size
+        meta_data_df.to_csv(TB_META_DATA_PATH, index=False, sep=',')
+        print("delete data successfully.")
         
 # --------------------------------------------------------------------------------------------
 

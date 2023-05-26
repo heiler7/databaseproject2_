@@ -84,7 +84,7 @@
         "kind": 2,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "def binsearch(table_df,attrv,attr):\n    lst = list(table_df[:][attr].values)\n    l = 0;r = table_df.shape[0]\n    while(l<r):\n        mid = int((l+r)/2)\n        if lst[mid] == attrv:\n            return mid\n        elif lst[mid] > attrv:\n            right = mid\n        else:",
+        "peekOfCode": "def binsearch(table_df,attrv,attr):\n    lst = list(table_df.loc[:,'primkey_val'])\n    lst1 = list(table_df.loc[:,'row_number'])\n    l = 0;r = table_df.shape[0]\n    while(l<r):\n        mid = int((l+r)/2)\n        if lst[mid] == attrv:\n            return lst1[mid]\n        elif lst[mid] > attrv:\n            r = mid",
         "detail": "instrana",
         "documentation": {}
     },
@@ -129,7 +129,7 @@
         "kind": 2,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "def show_table(dbname):\n    db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)\n    db_id = int(db_meta_data_df[db_meta_data_df[\"db_name\"] == dbname][\"db_id\"].values[0])\n    tb_meta_data_df = pd.read_csv(TB_META_DATA_PATH)\n    temp_df = tb_meta_data_df[tb_meta_data_df[\"is_del\"] == False]\n    tb_name_list = temp_df[temp_df[\"db_id\"] == db_id][\"table_name\"].values\n    for tb_name in tb_name_list:\n        print(tb_name)\ndef update(instr,db_path):\n    # update Person set FirstName=a where LastName=b ",
+        "peekOfCode": "def show_table(dbname):\n    db_meta_data_df = pd.read_csv(DB_META_DATA_PATH)\n    db_id = int(db_meta_data_df[db_meta_data_df[\"db_name\"] == dbname][\"db_id\"].values[0])\n    tb_meta_data_df = pd.read_csv(TB_META_DATA_PATH)\n    temp_df = tb_meta_data_df[tb_meta_data_df[\"invalid\"] == False]\n    tb_name_list = temp_df[temp_df[\"db_id\"] == db_id][\"table_name\"].values\n    for tb_name in tb_name_list:\n        print(tb_name)\ndef update(instr,db_path):\n    # update Person set FirstName=a where LastName=b ",
         "detail": "instrana",
         "documentation": {}
     },
@@ -174,7 +174,7 @@
         "kind": 2,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "def dropdatabase(instr):\n    _, _, db = instr.split(\" \")\n    db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n    # 从数据库表文件中查看是否有这个名称对应的并且其删除标记为FALSE的元组\n    try:\n        index = db_table_temp[(db_table_temp[\"db_name\"] == db) \\\n        & (db_table_temp[\"is_del\"] == False)].index.tolist()[0]\n    except:\n        # 如果没有，要删除的数据库不存在\n        print(\"Error: 没有\" + db + \"数据库！\")",
+        "peekOfCode": "def dropdatabase(instr):\n    _, _, db = instr.split(\" \")\n    db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n    # 从数据库表文件中查看是否有这个名称对应的并且其删除标记为FALSE的元组\n    try:\n        index = db_table_temp[(db_table_temp[\"db_name\"] == db) \\\n        & (db_table_temp[\"invalid\"] == False)].index.tolist()[0]\n    except:\n        # 如果没有，要删除的数据库不存在\n        print(\"Error: 没有\" + db + \"数据库！\")",
         "detail": "instrana",
         "documentation": {}
     },
@@ -183,7 +183,7 @@
         "kind": 2,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "def droptable(instr,dbname):\n        # 解析sql语句，如果符合删除数据库的正则表达式，那么从语句中得到要删除的表的名称\n        _, _, tb = instr.split(\" \")\n        db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n        try:\n            # 如果数据库表文件中有这个名称对应的并且其删除标记为FALSE的元组，继续\n            index = \\\n                db_table_temp[\n                    (db_table_temp[\"db_name\"] == dbname) &\\\n                    (db_table_temp[\"is_del\"] == False)].index.tolist()[0]",
+        "peekOfCode": "def droptable(instr,dbname):\n        # 解析sql语句，如果符合删除数据库的正则表达式，那么从语句中得到要删除的表的名称\n        _, _, tb = instr.split(\" \")\n        db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n        try:\n            # 如果数据库表文件中有这个名称对应的并且其删除标记为FALSE的元组，继续\n            index = \\\n                db_table_temp[\n                    (db_table_temp[\"db_name\"] == dbname) &\\\n                    (db_table_temp[\"invalid\"] == False)].index.tolist()[0]",
         "detail": "instrana",
         "documentation": {}
     },
@@ -192,7 +192,7 @@
         "kind": 2,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "def deletedata(instr,dbname):\n        _, _, tb, _, condition = instr.split(\" \")\n        db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n        try:\n            # 从全局变量获得现在选择的数据库名称\n            # 如果数据库表文件中有这个名称对应的并且其删除标记为FALSE的元组，继续\n            index = \\\n                db_table_temp[\n                    (db_table_temp[\"db_name\"] == dbname) &\\\n                    (db_table_temp[\"is_del\"] == False)].index.tolist()[0]",
+        "peekOfCode": "def deletedata(instr,dbname):\n        _, _, tb, _, condition = instr.split(\" \")\n        db_table_temp = pd.read_csv(DB_META_DATA_PATH)\n        try:\n            # 从全局变量获得现在选择的数据库名称\n            # 如果数据库表文件中有这个名称对应的并且其删除标记为FALSE的元组，继续\n            index = \\\n                db_table_temp[\n                    (db_table_temp[\"db_name\"] == dbname) &\\\n                    (db_table_temp[\"invalid\"] == False)].index.tolist()[0]",
         "detail": "instrana",
         "documentation": {}
     },
@@ -273,7 +273,7 @@
         "kind": 5,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "drop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表",
+        "peekOfCode": "drop_database_instr = r\"drop\\b\\sdatabase\\b\\s[a-zA-Z0-9_]+\"\n# 删除表\ndrop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\" # where只有int的比较\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表",
         "detail": "instrana",
         "documentation": {}
     },
@@ -282,7 +282,7 @@
         "kind": 5,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "drop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:",
+        "peekOfCode": "drop_table_instr = r\"drop\\b\\stable\\b\\s[a-zA-Z0-9_]+\"\n# 删除表项\ndelete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\" # where只有int的比较\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:",
         "detail": "instrana",
         "documentation": {}
     },
@@ -291,7 +291,7 @@
         "kind": 5,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "delete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:",
+        "peekOfCode": "delete_where_table_instr = r\"delete\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][a-zA-Z0-9_]+\"\n# 查询\nselect_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\" # where只有int的比较\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:",
         "detail": "instrana",
         "documentation": {}
     },
@@ -300,7 +300,7 @@
         "kind": 5,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "select_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]",
+        "peekOfCode": "select_table_instr = r\"(select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+)\"\nselect_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\" # where只有int的比较\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]",
         "detail": "instrana",
         "documentation": {}
     },
@@ -309,7 +309,7 @@
         "kind": 5,
         "importPath": "instrana",
         "description": "instrana",
-        "peekOfCode": "select_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\"\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns,index=[0])",
+        "peekOfCode": "select_where_table_instr = r\"select\\b\\s([a-zA-Z0-9_]+,)*[a-zA-Z0-9_]+\\b\\sfrom\\b\\s[a-zA-Z0-9_]+\\b\\swhere\\b\\s[a-zA-Z0-9_]+[>=<][0-9]+\" # where只有int的比较\ntype_list = [\"varchar\", \"int\", \"null\"]\n# 初始化数据库信息表\ndef init_databases_table():\n    try:\n        db_meta_data_pd = pd.read_csv(DB_META_DATA_PATH)\n    except FileNotFoundError:\n        # 包含数据库id，数据库名，创建时间，数据库是否有效的标记\n        db_meta_data_columns = [\"db_id\", \"db_name\", \"create_time\", \"invalid\"]\n        db_meta_data_pd = pd.DataFrame(columns=db_meta_data_columns,index=[0])",
         "detail": "instrana",
         "documentation": {}
     },

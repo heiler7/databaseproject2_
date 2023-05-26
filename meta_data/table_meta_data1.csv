@@ -1,2 +1,2 @@
 db_id,table_id,table_name,column_list,type_list,primary_key,foreign_key,row_num,size_in_byte,modify_time,create_time,uid,gid,invalid
-0.0,0.0,course,cid cname ctime,int varchar int,cid,,6.0,96.0,Thu May 25 20:44:24 2023,Thu May 25 20:11:17 2023,0.0,0.0,False
+0.0,0.0,course,cid cname ctime,int varchar int,cid,,5.0,83.0,Fri May 26 17:17:22 2023,Thu May 25 20:11:17 2023,0.0,0.0,False
